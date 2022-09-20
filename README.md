@@ -1,0 +1,2 @@
+# ATEM Mini Extreme ISO Macro Generator
+I got fed up with having to re-record macros every time I needed something else. This programmatically generates them to be pasted into the backup XML file which can then be restored to import them. The contents of main.py are fairly specific to me but the stuff in macro_lib might be useful to you.
