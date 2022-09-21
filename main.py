@@ -1,21 +1,18 @@
 from macro_lib import Macro, Source
 
 # Camera definitions
-FACE_CAM = Source.CAM1
-DESK_CAM = Source.CAM2
-MONITOR = Source.CAM3
-EFFECTS_CAM = Source.CAM4
-SPECTRUM_ANALYSER = Source.CAM5
-OSCILLOSCOPE = Source.CAM6
-VNA = Source.CAM7
+FACE_CAM = Source.CAM2
+MONITOR = Source.CAM1
+SPECTRUM_ANALYSER = Source.CAM3
+VNA = Source.CAM4
 
-# Upstream Keyer uses
-USK_FACE = 1
-USK_LOGO = 2
-USK_VNA = 3
+# Upstream Keyer uses (note that 1 is put on the bottom and 4 on the top)
+USK_INSTRUMENT = 1
+USK_FACE = 2
+USK_FACE = 3
 
-def add_face_bottom_right(macro: Macro):
-    """Adds face cam to bottom right corner"""
+
+def add_face_standard_position(macro: Macro):
     macro.add_upstream_key(
         keyNumber=USK_FACE,
         source=FACE_CAM,
@@ -26,12 +23,50 @@ def add_face_bottom_right(macro: Macro):
     )
 
 
-
-macro1 = Macro(0, "Monitor with Face", "Fullscreen monitor with face in standard position")
-macro1.set_fastest_ftb_speed()
-macro1.toggle_ftb()
-macro1.disable_all_keyers()
+macro1 = Macro(
+    0, "Monitor with Face", "Fullscreen monitor with face in standard position"
+)
+macro1.start_stinger()
+macro1.disable_non_stinger_keyers()
 macro1.set_input_source(MONITOR)
-add_face_bottom_right(macro1)
-macro1.toggle_ftb()
-macro1.print()
+add_face_standard_position(macro1)
+macro1.close_stinger()
+
+macro2 = Macro(
+    1,
+    "Spectrum Analyser with Face",
+    "Fullscreen spectrum analyser with face in standard position",
+)
+macro2.start_stinger()
+macro2.disable_non_stinger_keyers()
+macro2.set_input_source(Source.BLACK)
+macro2.add_upstream_key(
+    keyNumber=USK_INSTRUMENT,
+    source=SPECTRUM_ANALYSER,
+    xPos=-0.5,
+    yPos=-0,
+    xSize=1,
+    ySize=1,
+)
+add_face_standard_position(macro2)
+macro2.close_stinger()
+
+macro3 = Macro(
+    2, "VNA with Face", "Fullscreen VNA with face in standard position"
+)
+macro3.start_stinger()
+macro3.disable_non_stinger_keyers()
+macro3.set_input_source(Source.BLACK)
+macro3.add_upstream_key(
+    keyNumber=USK_INSTRUMENT,
+    source=VNA,
+    xPos=-3.5,
+    yPos=-0,
+    xSize=1.5,
+    ySize=1.5,
+)
+add_face_standard_position(macro3)
+macro3.close_stinger()
+
+for macro in [macro1, macro2, macro3]:
+    macro.print()
