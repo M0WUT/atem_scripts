@@ -1,72 +1,64 @@
 from macro_lib import Macro, Source
 
 # Camera definitions
-FACE_CAM = Source.CAM2
 MONITOR = Source.CAM1
-SPECTRUM_ANALYSER = Source.CAM3
-VNA = Source.CAM4
-
-# Upstream Keyer uses (note that 1 is put on the bottom and 4 on the top)
-USK_INSTRUMENT = 1
-USK_FACE = 2
-USK_FACE = 3
-
-
-def add_face_standard_position(macro: Macro):
-    macro.add_upstream_key(
-        keyNumber=USK_FACE,
-        source=FACE_CAM,
-        xPos=13,
-        yPos=-7,
-        xSize=0.2,
-        ySize=0.2,
-    )
+CAMERA1 = Source.CAM2
+VNA = Source.CAM3
+CAMERA2 = Source.CAM4
+SPECTRUM_ANALYSER = Source.CAM5
+OSCILLOSCOPE = Source.CAM6
+MICROSCOPE = Source.CAM7
+OVERLAYS = Source.CAM8
 
 
 macro1 = Macro(
-    0, "Monitor with Face", "Fullscreen monitor with face in standard position"
+    0, "Enable PIP", "Enable Picture in Picture"
 )
-macro1.start_stinger()
-macro1.disable_non_stinger_keyers()
-macro1.set_input_source(MONITOR)
-add_face_standard_position(macro1)
-macro1.close_stinger()
+macro1.add_picture_in_picture(source=CAMERA1)
 
-macro2 = Macro(
-    1,
-    "Spectrum Analyser with Face",
-    "Fullscreen spectrum analyser with face in standard position",
-)
-macro2.start_stinger()
-macro2.disable_non_stinger_keyers()
-macro2.set_input_source(Source.BLACK)
-macro2.add_upstream_key(
-    keyNumber=USK_INSTRUMENT,
-    source=SPECTRUM_ANALYSER,
-    xPos=-0.5,
-    yPos=-0,
-    xSize=1,
-    ySize=1,
-)
-add_face_standard_position(macro2)
-macro2.close_stinger()
+macro2 = Macro(1, "Disable PIP", "Remove Picture in Picture")
+macro2.remove_picture_in_picture()
 
-macro3 = Macro(
-    2, "VNA with Face", "Fullscreen VNA with face in standard position"
-)
-macro3.start_stinger()
-macro3.disable_non_stinger_keyers()
-macro3.set_input_source(Source.BLACK)
-macro3.add_upstream_key(
-    keyNumber=USK_INSTRUMENT,
-    source=VNA,
-    xPos=-3.5,
-    yPos=-0,
-    xSize=1.5,
-    ySize=1.5,
-)
-add_face_standard_position(macro3)
-macro3.close_stinger()
+macro3 = Macro(2, "Monitor", "Display PC Monitor")
+macro3.change_camera(MONITOR)
 
-for macro in [macro1, macro2, macro3]:
-    macro.print()
+macro4 = Macro(3, "VNA", "Display VNA")
+macro4.change_camera(VNA)
+
+macro5 = Macro(4, "Spectrum Analyser", "Display Spectrum Analyser")
+macro5.change_camera(SPECTRUM_ANALYSER)
+
+macro6 = Macro(5, "Microscope", "Display Microscope")
+macro6.change_camera(MICROSCOPE)
+
+macro7 = Macro(6, "Camera 1", "Display Camera 1")
+macro7.change_camera(CAMERA1)
+
+macro8 = Macro(7, "Camera 2", "Display Camera 2")
+macro8.change_camera(CAMERA2)
+
+macro9 = Macro(8, "Enable Overlays", "Enable Green screen overlays")
+macro9.enable_green_screen_overlays(OVERLAYS)
+
+macro10 = Macro(9, "Hide Overlays", "Hide green screen overlays")
+macro10.hide_green_screen_overlays()
+
+macro11 = Macro(10, "Show Overlays",
+                "Enables the overlay USK but doesn't set it up")
+macro11.set_upstream_keyer_state(Macro.USK_INSTRUMENT, True)
+
+with open("output.xml", 'w') as output_file:
+    # Header
+    output_file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    output_file.write(
+        '<Profile majorVersion="2" minorVersion="0" product="ATEM Mini Extreme ISO">\n')
+    output_file.write('    <MacroPool>\n')
+
+    # Macros
+    for macro in [macro1, macro2, macro3, macro4, macro5, macro6, macro7, macro8, macro9, macro10, macro11]:
+        output_file.write(macro.finalise())
+
+    # Footer
+    output_file.write('    </MacroPool>\n')
+    output_file.write('    <MacroControl loop="False"/>\n')
+    output_file.write('</Profile>\n')

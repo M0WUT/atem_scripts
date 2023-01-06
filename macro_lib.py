@@ -15,6 +15,8 @@ class Source(Enum):
     BLACK = auto()
     MEDIA_PLAYER_1 = auto()
     MEDIA_PLAYER_2 = auto()
+    MULTIVIEW = auto()
+    PROGRAM = auto()
 
     def __str__(self):
         names = {
@@ -29,11 +31,25 @@ class Source(Enum):
             self.BLACK: "Black",
             self.MEDIA_PLAYER_1: "MediaPlayer1",
             self.MEDIA_PLAYER_2: "MediaPlayer2",
+            self.MULTIVIEW: "MultiView1",
+            self.PROGRAM: "ME1Program"
+
         }
         return names[self]
 
 
 class Macro:
+
+    NUM_UPSTREAM_KEYERS = 4
+    NUM_DOWNSTREAM_KEYERS = 2
+
+    # Upstream Keyer uses (note that 1 is put on the bottom and 4 on the top)
+    USK_INSTRUMENT = 3  # Overlay of Instrument Readings
+    USK_PIP = 4  # Picture in Picture
+
+    # Downstream Keyer uses (note that 1 is on the bottom and 2 is on the top)
+    DSK_STINGER = 2
+
     def __init__(self, index: int, name: str = "", description: str = ""):
         self.macroString = f'        <Macro index="{index}" name="{name}" description="{description}">\n'
 
@@ -46,7 +62,7 @@ class Macro:
         self._macro_print({"id": "FadeToBlackAuto", "mixEffectBlockIndex": 0})
 
     def set_upstream_keyer_state(self, keyer: int, enabled: bool):
-        """Sets state of USK 1-4 to <enabled>"""
+        """Sets state of Upstream Keyer number <keyer> to <enabled>"""
         self._macro_print(
             {
                 "id": "KeyOnAir",
@@ -57,7 +73,7 @@ class Macro:
         )
 
     def set_downstream_keyer_state(self, keyer: int, enabled: bool):
-        """Sets state of DSK 1-2 to <enabled>"""
+        """Sets state of Downstream Keyer number <keyer> to <enabled>"""
         self._macro_print(
             {
                 "id": "DownstreamKeyOnAir",
@@ -68,19 +84,20 @@ class Macro:
 
     def disable_all_keyers(self):
         """Disables the 4 upstream and 2 downstream keyers"""
-        for upstreamKeyer in range(1, 5):
-            self.set_upstream_keyer_state(upstreamKeyer, False)
+        for upstream_keyer in range(1, self.NUM_UPSTREAM_KEYERS + 1):
+            self.set_upstream_keyer_state(upstream_keyer, False)
 
-        for downstreamKeyer in range(1, 3):
-            self.set_downstream_keyer_state(downstreamKeyer, False)
+        for downstream_keyer in range(1, self.NUM_DOWNSTREAM_KEYERS):
+            self.set_downstream_keyer_state(downstream_keyer, False)
 
     def disable_non_stinger_keyers(self):
         """Disables the 4 upstream and DSK1 (2 is used for transition)"""
-        for upstreamKeyer in range(1, 5):
-            self.set_upstream_keyer_state(upstreamKeyer, False)
+        for upstream_keyer in range(1, self.NUM_UPSTREAM_KEYERS + 1):
+            self.set_upstream_keyer_state(upstream_keyer, False)
 
-        for downstreamKeyer in [1]:
-            self.set_downstream_keyer_state(downstreamKeyer, False)
+        for downstream_keyer in range(1, self.NUM_DOWNSTREAM_KEYERS + 1):
+            if downstream_keyer != self.DSK_STINGER:
+                self.set_downstream_keyer_state(downstream_keyer, False)
 
     def set_input_source(self, source: Source):
         self._macro_print(
@@ -220,7 +237,51 @@ class Macro:
                 {"id": "MediaPlayerSourceStill", "mediaPlayer": 0}
             )
             self._macro_print({"id": "MacroSleep", "frames": 1})
-        self.set_downstream_keyer_state(2, False)
+        self.set_downstream_keyer_state(self.DSK_STINGER, False)
+
+    def set_output_source(self, output: int, source: Source):
+        """
+        Sets source for HDMI outputs
+        """
+        self._macro_print(
+            {"id": "AuxiliaryInput", "auxilaryIndex": (output - 1), "input": source})
+
+    def add_picture_in_picture(self, source: Source):
+        self.add_upstream_key(
+            keyNumber=self.USK_PIP,
+            source=source,
+            xPos=13,
+            yPos=-7,
+            xSize=0.2,
+            ySize=0.2,
+        )
+
+    def remove_picture_in_picture(self):
+        self.set_upstream_keyer_state(self.USK_PIP, False)
+
+    def change_camera(self, source: Source):
+        self.start_stinger()
+        self.disable_non_stinger_keyers()
+        self.set_input_source(source)
+        self.close_stinger()
+
+    def enable_green_screen_overlays(self, source: Source):
+        self._macro_print({"id": "KeyType", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "type": "Chroma"})
+        self._macro_print({"id": "KeyFillInput", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "input": source})
+        self._macro_print({"id": "AdvancedChromaKeySamplingModeEnabled",
+                          "mixEffectBlockIndex": 0, "keyIndex": self.USK_INSTRUMENT - 1, "enabled": True})
+        self._macro_print({"id": "AdvancedChromaKeyCursorSize", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "size": 0.0630035})
+        self._macro_print({"id": "AdvancedChromaKeyCursorXPosition", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "xPosition": -17.024})
+        self._macro_print({"id": "AdvancedChromaKeyCursorYPosition", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "yPosition": 10.286})
+        self.set_upstream_keyer_state(self.USK_INSTRUMENT, True)
+
+    def hide_green_screen_overlays(self):
+        self.set_upstream_keyer_state(self.USK_INSTRUMENT, False)
 
     def _macro_print(self, x: dict):
         # Formats a dictionary into a single line to be printed
@@ -229,9 +290,9 @@ class Macro:
         line += "/>\n"
         self.macroString += line
 
-    def print(self):
-        self.macroString += "        </Macro>"
-        print(self.macroString)  # @DEBUG
+    def finalise(self) -> str:
+        self.macroString += "        </Macro>\n"
+        return self.macroString
 
 
 def main():
