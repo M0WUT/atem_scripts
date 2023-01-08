@@ -244,7 +244,7 @@ class Macro:
         Sets source for HDMI outputs
         """
         self._macro_print(
-            {"id": "AuxiliaryInput", "auxilaryIndex": (output - 1), "input": source})
+            {"id": "AuxiliaryInput", "auxiliaryIndex": (output - 1), "input": source})
 
     def add_picture_in_picture(self, source: Source):
         self.add_upstream_key(

@@ -47,6 +47,15 @@ macro11 = Macro(10, "Show Overlays",
                 "Enables the overlay USK but doesn't set it up")
 macro11.set_upstream_keyer_state(Macro.USK_INSTRUMENT, True)
 
+macro12 = Macro(11, "Preview Camera 1", "Preview Camera 1")
+macro12.set_output_source(1, CAMERA1)
+
+macro13 = Macro(12, "Preview Multiview", "Preview Multiview")
+macro13.set_output_source(1, Source.MULTIVIEW)
+
+macro14 = Macro(13, "Preview Program", "Preview Program")
+macro14.set_output_source(1, Source.PROGRAM)
+
 with open("output.xml", 'w') as output_file:
     # Header
     output_file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -55,7 +64,7 @@ with open("output.xml", 'w') as output_file:
     output_file.write('    <MacroPool>\n')
 
     # Macros
-    for macro in [macro1, macro2, macro3, macro4, macro5, macro6, macro7, macro8, macro9, macro10, macro11]:
+    for macro in [macro1, macro2, macro3, macro4, macro5, macro6, macro7, macro8, macro9, macro10, macro11, macro12, macro13, macro14]:
         output_file.write(macro.finalise())
 
     # Footer
