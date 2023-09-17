@@ -2,59 +2,69 @@ from macro_lib import Macro, Source
 
 # Camera definitions
 MONITOR = Source.CAM1
-CAMERA1 = Source.CAM2
+ROAMING_CAM = Source.CAM2
 VNA = Source.CAM3
-CAMERA2 = Source.CAM4
+OVERHEAD = Source.CAM4
 SPECTRUM_ANALYSER = Source.CAM5
 OSCILLOSCOPE = Source.CAM6
 MICROSCOPE = Source.CAM7
 OVERLAYS = Source.CAM8
 
+macros: list[Macro] = []
 
-macro1 = Macro(
+macros.append(Macro(
     0, "Enable PIP", "Enable Picture in Picture"
-)
-macro1.add_picture_in_picture(source=CAMERA1)
+))
+macros[-1].add_picture_in_picture(source=OVERHEAD)
 
-macro2 = Macro(1, "Disable PIP", "Remove Picture in Picture")
-macro2.remove_picture_in_picture()
+macros.append(Macro(1, "Disable PIP", "Remove Picture in Picture"))
+macros[-1].remove_picture_in_picture()
 
-macro3 = Macro(2, "Monitor", "Display PC Monitor")
-macro3.change_camera(MONITOR)
+macros.append(Macro(2, "Monitor", "Display PC Monitor"))
+macros[-1].change_camera(MONITOR)
 
-macro4 = Macro(3, "VNA", "Display VNA")
-macro4.change_camera(VNA)
+macros.append(Macro(3, "VNA", "Display VNA"))
+macros[-1].start_stinger()
+macros[-1].disable_non_stinger_keyers()
+macros[-1].set_input_source(Source.BLACK)
+macros[-1].add_upstream_key(keyNumber=1, source=VNA,
+                            xPos=0, yPos=0, xSize=1.5, ySize=1.5)
+macros[-1].close_stinger()
 
-macro5 = Macro(4, "Spectrum Analyser", "Display Spectrum Analyser")
-macro5.change_camera(SPECTRUM_ANALYSER)
 
-macro6 = Macro(5, "Microscope", "Display Microscope")
-macro6.change_camera(MICROSCOPE)
+macros.append(Macro(4, "Spectrum Analyser", "Display Spectrum Analyser"))
+macros[-1].change_camera(SPECTRUM_ANALYSER)
 
-macro7 = Macro(6, "Camera 1", "Display Camera 1")
-macro7.change_camera(CAMERA1)
+macros.append(Macro(5, "Microscope", "Display Microscope"))
+macros[-1].change_camera(MICROSCOPE)
 
-macro8 = Macro(7, "Camera 2", "Display Camera 2")
-macro8.change_camera(CAMERA2)
+macros.append(Macro(6, "Overhead Camera", "Display Overhead Camera"))
+macros[-1].change_camera(OVERHEAD)
 
-macro9 = Macro(8, "Enable Overlays", "Enable Green screen overlays")
-macro9.enable_green_screen_overlays(OVERLAYS)
+macros.append(Macro(7, "Spare Camera", "Display Spare Camera"))
+macros[-1].change_camera(ROAMING_CAM)
 
-macro10 = Macro(9, "Hide Overlays", "Hide green screen overlays")
-macro10.hide_green_screen_overlays()
+macros.append(Macro(8, "Enable Overlays", "Enable Green screen overlays"))
+macros[-1].enable_green_screen_overlays(OVERLAYS)
 
-macro11 = Macro(10, "Show Overlays",
-                "Enables the overlay USK but doesn't set it up")
-macro11.set_upstream_keyer_state(Macro.USK_INSTRUMENT, True)
+macros.append(Macro(9, "Hide Overlays", "Hide green screen overlays"))
+macros[-1].hide_green_screen_overlays()
 
-macro12 = Macro(11, "Preview Camera 1", "Preview Camera 1")
-macro12.set_output_source(1, CAMERA1)
+macros.append(Macro(10, "Show Overlays",
+                    "Enables the overlay USK but doesn't set it up"))
+macros[-1].set_upstream_keyer_state(Macro.USK_INSTRUMENT, True)
 
-macro13 = Macro(12, "Preview Multiview", "Preview Multiview")
-macro13.set_output_source(1, Source.MULTIVIEW)
+macros.append(Macro(11, "Preview Camera 1", "Preview Camera 1"))
+macros[-1].set_output_source(1, OVERHEAD)
 
-macro14 = Macro(13, "Preview Program", "Preview Program")
-macro14.set_output_source(1, Source.PROGRAM)
+macros.append(Macro(12, "Preview Multiview", "Preview Multiview"))
+macros[-1].set_output_source(1, Source.MULTIVIEW)
+
+macros.append(Macro(13, "Preview Program", "Preview Program"))
+macros[-1].set_output_source(1, Source.PROGRAM)
+
+macros.append(Macro(14, "Oscilloscope", "Display Oscilloscope"))
+macros[-1].change_camera(OSCILLOSCOPE)
 
 with open("output.xml", 'w') as output_file:
     # Header
@@ -64,7 +74,7 @@ with open("output.xml", 'w') as output_file:
     output_file.write('    <MacroPool>\n')
 
     # Macros
-    for macro in [macro1, macro2, macro3, macro4, macro5, macro6, macro7, macro8, macro9, macro10, macro11, macro12, macro13, macro14]:
+    for macro in macros:
         output_file.write(macro.finalise())
 
     # Footer

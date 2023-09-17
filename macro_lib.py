@@ -278,6 +278,12 @@ class Macro:
                           "keyIndex": self.USK_INSTRUMENT - 1, "xPosition": -17.024})
         self._macro_print({"id": "AdvancedChromaKeyCursorYPosition", "mixEffectBlockIndex": 0,
                           "keyIndex": self.USK_INSTRUMENT - 1, "yPosition": 10.286})
+        self._macro_print({"id": "AdvancedChromaKeyKeyEdge", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "keyEdge": 0.5})
+        self._macro_print({"id": "AdvancedChromaKeyBackgroundLevel", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "backgroundLevel": 1})
+        self._macro_print({"id": "AdvancedChromaKeyForegroundLevel", "mixEffectBlockIndex": 0,
+                          "keyIndex": self.USK_INSTRUMENT - 1, "foregroundLevel": 0})
         self.set_upstream_keyer_state(self.USK_INSTRUMENT, True)
 
     def hide_green_screen_overlays(self):
