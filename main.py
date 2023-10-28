@@ -1,14 +1,14 @@
 from macro_lib import Macro, Source
 
 # Camera definitions
-MONITOR = Source.CAM1
-ROAMING_CAM = Source.CAM2
-VNA = Source.CAM3
-OVERHEAD = Source.CAM4
-SPECTRUM_ANALYSER = Source.CAM5
-OSCILLOSCOPE = Source.CAM6
-MICROSCOPE = Source.CAM7
-OVERLAYS = Source.CAM8
+MONITOR = Source.CAM3
+ROAMING_CAM = Source.CAM1
+VNA = Source.CAM4
+OVERHEAD = Source.CAM7
+SPECTRUM_ANALYSER = Source.CAM8
+OSCILLOSCOPE = Source.CAM2
+MICROSCOPE = Source.CAM5
+OVERLAYS = Source.CAM6
 
 macros: list[Macro] = []
 
